@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ReserveFlow — a concept for Micah</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #071422;
+      --navy-2: #0e2240;
+      --blue: #2f6bff;
+      --ink: #122033;
+      --muted: #5c6d84;
+      --line: #e5edf6;
+      --bg: #f5f7fb;
+      --green: #0c7a56;
+      --green-bg: #e7f6ef;
+      --amber: #9a6408;
+      --amber-bg: #fff4df;
+      --red: #b43333;
+      --red-bg: #fdecec;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: var(--navy);
+      color: #e7eef8;
+      font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    button, input, select, textarea { font-family: inherit; color: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .45; cursor: default; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--blue); outline-offset: 2px;
+    }
+    header {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 22px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      border-top: 3px solid var(--blue);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 220px; }
+    .mark {
+      width: 36px; height: 36px; border-radius: 10px; background: var(--blue);
+      display: grid; place-items: center; font-weight: 700; color: #fff;
+    }
+    .brand strong { display: block; font-size: 16px; letter-spacing: -.02em; }
+    .brand em { display: block; font-style: normal; color: #9eb0c8; font-size: 12px; }
+    .modes {
+      display: flex; background: #10233c; padding: 4px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .modes button {
+      border: 0; background: transparent; color: #c5d4e8; border-radius: 999px;
+      padding: 8px 14px; font-weight: 600; font-size: 14px;
+    }
+    .modes button.on { background: var(--blue); color: #fff; }
+    .pager { display: flex; align-items: center; gap: 8px; }
+    .pager span { color: #9eb0c8; font-size: 13px; min-width: 64px; text-align: center; }
+    .ghost, .next {
+      border-radius: 999px; padding: 9px 14px; font-weight: 700; font-size: 14px; border: 0;
+    }
+    .ghost { background: transparent; color: #d5e2f4; box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
+    .next { background: var(--blue); color: #fff; }
+    .layout {
+      height: calc(100% - 72px);
+      display: grid;
+      grid-template-columns: minmax(420px, 1fr) 400px;
+      gap: 28px;
+      align-items: center;
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 18px 28px;
+    }
+    .layout.single { grid-template-columns: 1fr; justify-items: center; align-items: center; overflow: auto; }
+    .device-col { display: flex; justify-content: center; min-width: 0; }
+    .notes {
+      background: #10233c;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 20px;
+      padding: 22px 22px 16px;
+      max-height: calc(100vh - 110px);
+      overflow: auto;
+    }
+    .eyebrow {
+      margin: 0 0 6px; color: #8eb0ff; font-size: 12px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .notes h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.03em; }
+    .purpose { margin: 0; color: #c9d7ea; font-size: 15px; line-height: 1.5; }
+    .notes ul { margin: 12px 0 0; padding-left: 18px; color: #e4edf8; }
+    .notes li { margin: 5px 0; }
+    .covers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .tag {
+      font-size: 12px; font-weight: 600; color: #d7e4ff;
+      background: rgba(47,107,255,.16); border-radius: 999px; padding: 5px 10px;
+    }
+    .phases {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .phases h3 { margin: 0 0 6px; font-size: 13px; }
+    .phases ul { margin: 0; padding-left: 16px; font-size: 12.5px; color: #c5d4e8; }
+    .fine { margin: 12px 0 0; font-size: 12px; color: #93a6c0; line-height: 1.45; }
+    .phone {
+      width: 390px;
+      height: min(800px, calc(100vh - 108px));
+      background: #0c0e12;
+      border-radius: 46px;
+      padding: 10px 10px 16px;
+      position: relative;
+      box-shadow: 0 24px 60px rgba(0,0,0,.35);
+      flex: none;
+    }
+    .island {
+      position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+      width: 92px; height: 22px; background: #000; border-radius: 20px; z-index: 5;
+    }
+    .home-ind {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      width: 118px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.85);
+    }
+    .phone-screen {
+      height: 100%; background: #fff; color: var(--ink); border-radius: 36px;
+      overflow: hidden; display: flex; flex-direction: column; position: relative;
+    }
+    .status {
+      flex: none; height: 46px; display: flex; align-items: flex-end; justify-content: space-between;
+      padding: 0 22px 6px; font-size: 13px; font-weight: 700; background: #fff;
+    }
+    .status.light { background: var(--navy-2); color: #fff; }
+    .status-icons { display: flex; gap: 5px; align-items: center; }
+    .status svg { width: 16px; height: 16px; }
+    .m-scroll { flex: 1; overflow: auto; background: #fff; }
+    .m-scroll::-webkit-scrollbar { width: 0; }
+    .dock {
+      flex: none; padding: 10px 16px 14px; background: #fff; border-top: 1px solid var(--line);
+    }
+    .dock .check { margin: 0 0 8px; }
+    .tabbar {
+      flex: none; display: grid; grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--line); background: #fff; padding: 6px 4px 8px;
+    }
+    .tab {
+      border: 0; background: transparent; display: flex; flex-direction: column;
+      align-items: center; gap: 2px; color: #8b9bb0; font-size: 10px; font-weight: 600;
+    }
+    .tab svg { width: 22px; height: 22px; }
+    .tab.on { color: var(--blue); }
+    .home-hero { background: var(--navy-2); color: #fff; padding: 6px 18px 34px; border-radius: 0 0 28px 28px; }
+    .hero-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .biz { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #9eb6d6; font-weight: 700; }
+    .biz-sub { color: #d5e2f4; font-size: 13px; margin-top: 2px; }
+    .hello { margin: 16px 0 0; color: #c5d4ea; font-size: 14px; }
+    .hello-row { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; }
+    .hello-row strong { font-size: 26px; letter-spacing: -.03em; }
+    .avatar, .avatar-lg {
+      border: 0; border-radius: 50%; background: #fff; color: var(--navy-2);
+      display: grid; place-items: center; font-weight: 700;
+    }
+    .avatar { width: 38px; height: 38px; font-size: 13px; }
+    .avatar-lg { width: 64px; height: 64px; font-size: 20px; background: #e8f0ff; color: var(--blue); margin: 8px auto; }
+    .bell { position: relative; width: 36px; height: 36px; border: 0; background: transparent; color: #fff; display: grid; place-items: center; }
+    .bell svg { width: 22px; height: 22px; }
+    .badge {
+      position: absolute; top: 0; right: 0; background: var(--blue); color: #fff;
+      border: 2px solid var(--navy-2); font-size: 10px; min-width: 16px; height: 16px;
+      border-radius: 99px; display: grid; place-items: center; font-weight: 700; padding: 0 3px;
+    }
+    .search, .cta-light, .btn, .btn-secondary, .qbtn, .slot, .svc, .chip, .row, .note, .nextcard {
+      border: 0; text-align: left;
+    }
+    .search {
+      width: 100%; margin-top: 16px; display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.1); color: rgba(255,255,255,.82);
+      border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 500;
+    }
+    .search svg { width: 18px; height: 18px; }
+    .cta-light {
+      margin-top: 12px; width: 100%; background: #fff; color: var(--navy-2);
+      border-radius: 14px; min-height: 50px; font-weight: 700; font-size: 15px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .nextcard {
+      display: block; margin: -22px 16px 0; background: #fff; border-radius: 18px;
+      padding: 14px; box-shadow: 0 0 0 1px var(--line); color: var(--ink);
+    }
+    .kicker {
+      font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); font-weight: 700; margin: 0;
+    }
+    .nextcard h3 { margin: 4px 0; font-size: 16px; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .rowline { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+    .pad { padding: 16px 16px 24px; }
+    .qrow { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .qbtn {
+      background: #fff; box-shadow: 0 0 0 1px var(--line); border-radius: 14px;
+      padding: 12px 8px; text-align: center; font-size: 12px; font-weight: 700; color: var(--ink);
+    }
+    .section-label { padding: 18px 16px 8px; }
+    .m-top {
+      display: flex; align-items: center; gap: 8px; padding: 2px 8px 8px; min-height: 42px;
+    }
+    .m-top h1 { flex: 1; text-align: center; font-size: 16px; margin: 0; }
+    .icon-btn {
+      width: 36px; height: 36px; border: 0; background: transparent; border-radius: 12px;
+      display: grid; place-items: center; color: var(--ink);
+    }
+    .icon-btn svg, .m-top svg { width: 20px; height: 20px; }
+    .svc {
+      width: 100%; background: #fff; box-shadow: 0 0 0 1px var(--line); border-radius: 16px;
+      padding: 12px 14px; margin-bottom: 8px; color: var(--ink);
+    }
+    .svc.sel { box-shadow: 0 0 0 2px var(--blue); background: #f4f8ff; }
+    .svc b, .who b { font-size: 14px; }
+    .svc p { margin: 4px 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+    .chip {
+      border-radius: 999px; padding: 8px 12px; background: #fff; color: var(--ink);
+      box-shadow: 0 0 0 1px var(--line); font-weight: 600; font-size: 13px;
+    }
+    .chip.sel { background: var(--navy-2); color: #fff; box-shadow: none; }
+    .btn, .btn-secondary {
+      width: 100%; min-height: 48px; border-radius: 14px; font-weight: 700; font-size: 15px;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+    }
+    .btn { background: var(--blue); color: #fff; }
+    .btn-secondary { background: #fff; color: var(--ink); box-shadow: 0 0 0 1px #d5e0ec; }
+    .btn-danger { background: #fff; color: var(--red); box-shadow: 0 0 0 1px #f0c9c9; }
+    .stack { display: flex; flex-direction: column; gap: 8px; }
+    .linkish {
+      display: block; margin: 8px auto; border: 0; background: transparent;
+      color: var(--blue); font-weight: 700; font-size: 14px; text-align: center;
+    }
+    .cal-head, .week-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .cal-head b, .week-head b { font-size: 15px; }
+    .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .dow { text-align: center; font-size: 11px; color: #8b9bb0; font-weight: 700; padding: 4px 0; }
+    .day {
+      aspect-ratio: 1; border-radius: 12px; border: 0; background: transparent;
+      font-weight: 600; color: var(--ink); position: relative; font-size: 13px;
+    }
+    .day.muted { color: #c5d0de; }
+    .day.sel { background: var(--blue); color: #fff; }
+    .day.today:not(.sel) { box-shadow: inset 0 0 0 1.5px var(--blue); }
+    .day .mark {
+      width: 4px; height: 4px; border-radius: 50%; background: var(--blue);
+      position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    }
+    .day.sel .mark { background: #fff; }
+    .day.full .mark { background: #b7c3d4; }
+    .legend-row { display: flex; gap: 12px; font-size: 12px; color: var(--muted); margin: 8px 0 12px; }
+    .legend-row i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    .d-open { background: var(--blue); }
+    .d-booked { background: var(--navy-2); }
+    .d-block { background: #c5d0de; }
+    .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .slot {
+      border-radius: 14px; padding: 10px; background: #fff; color: var(--ink);
+      box-shadow: 0 0 0 1px #e1eaf3;
+    }
+    .slot b { display: block; font-size: 14px; }
+    .slot em { display: block; font-style: normal; font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .slot.sel { background: var(--blue); color: #fff; box-shadow: none; }
+    .slot.sel em { color: rgba(255,255,255,.85); }
+    .slot:disabled { background: #f4f7fb; color: #8b9bb0; }
+    .banner {
+      background: #f4f8ff; color: #23406e; border-radius: 12px; padding: 10px 12px;
+      font-size: 13px; margin-bottom: 10px;
+    }
+    .summary {
+      box-shadow: 0 0 0 1px var(--line); border-radius: 16px; padding: 14px; margin-bottom: 12px;
+    }
+    .summary h3 { margin: 0 0 4px; font-size: 16px; }
+    .check {
+      display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: #24364c; margin: 8px 0 12px;
+    }
+    .check input { margin-top: 2px; accent-color: var(--blue); }
+    .field, textarea, select.field, .admin-search, .mini-form input, .mini-form select {
+      width: 100%; border: 1px solid #dbe5f0; background: #fff; border-radius: 12px;
+      padding: 12px; font-size: 14px; outline: none; color: var(--ink);
+    }
+    textarea { min-height: 56px; resize: vertical; }
+    .field:focus, textarea:focus, select:focus, .admin-search:focus, .mini-form input:focus { border-color: var(--blue); }
+    .label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin: 10px 0 6px; }
+    .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .pill-confirmed { background: var(--green-bg); color: var(--green); }
+    .pill-pending { background: var(--amber-bg); color: var(--amber); }
+    .pill-cancelled { background: var(--red-bg); color: var(--red); }
+    .pill-completed { background: #eef2f6; color: var(--muted); }
+    .seg { display: flex; background: #f4f7fb; border-radius: 12px; padding: 3px; margin-bottom: 8px; }
+    .seg button { flex: 1; border: 0; background: transparent; border-radius: 10px; padding: 8px; font-weight: 700; font-size: 13px; color: var(--muted); }
+    .seg button.on { background: #fff; color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+    .book {
+      width: 100%; background: #fff; box-shadow: 0 0 0 1px var(--line); border-radius: 16px;
+      padding: 12px 14px; margin-bottom: 8px; color: var(--ink); text-align: left;
+    }
+    .book h3 { margin: 0 0 2px; font-size: 15px; }
+    .ok {
+      width: 64px; height: 64px; border-radius: 50%; background: var(--green-bg); color: var(--green);
+      display: grid; place-items: center; margin: 28px auto 12px;
+    }
+    .ok.pending { background: var(--amber-bg); color: var(--amber); }
+    .ok svg { width: 32px; height: 32px; }
+    .center { text-align: center; padding: 0 20px; }
+    .center h2 { margin: 0; font-size: 22px; letter-spacing: -.03em; }
+    .refbox {
+      margin: 16px auto; width: fit-content; min-width: 190px; border: 1px dashed #c5d4e6;
+      border-radius: 14px; padding: 10px 16px; text-align: center;
+    }
+    .refbox b { display: block; font-size: 20px; letter-spacing: .04em; }
+    .refbox span { color: var(--muted); font-size: 12px; }
+    .note { display: flex; gap: 10px; width: 100%; padding: 12px 0; border-top: 1px solid #eef2f6; background: #fff; color: var(--ink); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; background: transparent; flex: none; }
+    .note.unread .dot { background: var(--blue); }
+    .note b { display: block; font-size: 14px; }
+    .row {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-top: 1px solid #eef2f6; background: #fff; color: var(--ink);
+    }
+    .row small, .sub { display: block; color: var(--muted); font-size: 12px; font-weight: 500; }
+    .row svg { width: 18px; height: 18px; color: #8b9bb0; }
+    .switch {
+      width: 42px; height: 26px; border-radius: 99px; background: #d5deea; border: 0; position: relative; flex: none;
+    }
+    .switch i {
+      position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+      background: #fff; transition: left .15s ease;
+    }
+    .switch.on { background: var(--blue); }
+    .switch.on i { left: 19px; }
+    .pref { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #eef2f6; }
+    .sheet-bg {
+      position: absolute; inset: 0; background: rgba(10,18,32,.45);
+      display: flex; align-items: flex-end; z-index: 6;
+    }
+    .sheet { background: #fff; width: 100%; border-radius: 20px 20px 36px 36px; padding: 18px 18px 28px; color: var(--ink); }
+    .sheet h3 { margin: 0 0 6px; }
+    .addon {
+      box-shadow: 0 0 0 1px var(--line); border-radius: 16px; padding: 12px; margin-bottom: 8px;
+    }
+    .addon p { margin: 4px 0 8px; color: var(--muted); font-size: 13px; }
+    .laptop {
+      width: min(860px, calc(100vw - 480px));
+      height: min(760px, calc(100vh - 108px));
+      background: #fff; color: var(--ink); border-radius: 16px; overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,.35); display: flex; flex-direction: column;
+      position: relative;
+    }
+    .laptop .sheet-bg { align-items: center; justify-content: center; padding: 24px; }
+    .laptop .sheet { border-radius: 16px; width: min(420px, 100%); }
+    .chrome {
+      height: 40px; background: #f4f7fb; display: flex; align-items: center; gap: 10px;
+      padding: 0 14px; color: var(--muted); font-size: 12px; font-weight: 600;
+      border-bottom: 1px solid var(--line); flex: none;
+    }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 8px; height: 8px; border-radius: 50%; background: #d3dde8; display: block; }
+    .admin { display: flex; min-height: 0; flex: 1; }
+    .aside-nav { width: 188px; background: var(--navy-2); color: #fff; padding: 16px 10px; flex: none; }
+    .alogo { padding: 4px 10px 16px; }
+    .alogo b { display: block; font-size: 16px; }
+    .alogo span { color: #9eb0c8; font-size: 12px; }
+    .navbtn {
+      width: 100%; display: flex; align-items: center; gap: 8px; color: #d5e2f4;
+      border: 0; background: transparent; border-radius: 10px; padding: 10px;
+      font-weight: 600; font-size: 14px; text-align: left;
+    }
+    .navbtn svg { width: 18px; height: 18px; }
+    .navbtn.on { background: var(--blue); color: #fff; }
+    .amain { flex: 1; overflow: auto; background: var(--bg); padding: 16px; }
+    .amain h2 { margin: 0; font-size: 20px; letter-spacing: -.03em; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+    .stat { background: #fff; border-radius: 14px; padding: 12px; box-shadow: 0 0 0 1px var(--line); }
+    .stat b { display: block; font-size: 22px; letter-spacing: -.03em; }
+    .stat span { color: var(--muted); font-size: 12px; }
+    .bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: #e8eef5; margin-top: 12px; }
+    .bar .occ { background: var(--navy-2); }
+    .bar .op { background: var(--blue); }
+    .bar .bl { background: #c5d0de; }
+    .bar-legend { display: flex; gap: 12px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .split { display: grid; grid-template-columns: 1.15fr .85fr; gap: 10px; margin-top: 12px; }
+    .panel { background: #fff; box-shadow: 0 0 0 1px var(--line); border-radius: 16px; padding: 14px; }
+    .panel h3 { margin: 0 0 10px; font-size: 14px; }
+    .tl-row, .pay-row, .act-row, .set-row {
+      display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid #eef2f6;
+    }
+    .tl-time { width: 72px; flex: none; font-size: 12px; font-weight: 700; color: var(--muted); padding-top: 2px; }
+    .tl-card { flex: 1; }
+    .mini { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .mini .btn, .mini .btn-secondary, .mini .ghost {
+      width: auto; min-height: 32px; padding: 6px 10px; font-size: 12px; border-radius: 9px;
+    }
+    .mini .ghost { color: var(--ink); box-shadow: inset 0 0 0 1px #d5e0ec; }
+    .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .wday {
+      background: #fff; border-radius: 12px; min-height: 220px; padding: 8px;
+      box-shadow: 0 0 0 1px var(--line); text-align: left; color: var(--ink); border: 0;
+    }
+    .wday.off { background: #eef2f6; color: var(--muted); }
+    .wday header, .wday .wd { font-size: 11px; font-weight: 700; color: var(--muted); }
+    .wday .n { font-size: 16px; color: var(--ink); }
+    .evt {
+      display: block; margin-top: 6px; background: #e8f0ff; color: #1d3f86;
+      border-radius: 8px; padding: 4px 6px; font-size: 11px; font-weight: 600; line-height: 1.3;
+    }
+    .evt.pending { background: var(--amber-bg); color: var(--amber); }
+    .evt.block { background: #eef2f6; color: #5c6d84; }
+    .evt.cancelled { opacity: .55; }
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+    .filters button {
+      border: 0; background: #fff; box-shadow: 0 0 0 1px var(--line); border-radius: 999px;
+      padding: 6px 10px; font-size: 12px; font-weight: 700; color: var(--muted);
+    }
+    .filters button.on { background: var(--navy-2); color: #fff; box-shadow: none; }
+    .views { display: flex; gap: 6px; }
+    .views button { border: 0; background: #fff; box-shadow: 0 0 0 1px var(--line); border-radius: 999px; padding: 6px 10px; font-weight: 700; font-size: 12px; color: var(--muted); }
+    .views button.on { background: var(--blue); color: #fff; box-shadow: none; }
+    .mini-form { display: grid; gap: 6px; margin-top: 8px; }
+    .close-card {
+      width: min(780px, 100%); background: #fff; color: var(--ink);
+      border-radius: 24px; padding: 32px; max-height: calc(100vh - 120px); overflow: auto;
+    }
+    .close-card h2 { margin: 8px 0; font-size: 32px; letter-spacing: -.03em; }
+    .close-card .lead { margin: 0 0 8px; color: #3d5168; font-size: 16px; line-height: 1.5; }
+    .q { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: flex-start; }
+    .q span {
+      width: 28px; height: 28px; border-radius: 8px; background: #eef3ff; color: var(--blue);
+      display: grid; place-items: center; font-weight: 700; flex: none;
+    }
+    .q p { margin: 2px 0 0; }
+    .phase-light { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 8px; }
+    .phase-light h3 { margin: 0 0 6px; font-size: 14px; }
+    .phase-light ul { margin: 0; padding-left: 18px; color: #24364c; }
+    .phase-light li { margin: 4px 0; }
+    #toast {
+      position: fixed; top: 84px; left: 50%; transform: translateX(-50%) translateY(-8px);
+      background: #fff; color: var(--ink); padding: 12px 16px; border-radius: 999px;
+      font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2); transition: .2s ease; z-index: 30;
+      max-width: min(520px, calc(100% - 32px)); text-align: center;
+    }
+    #toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 1100px) {
+      body { overflow: auto; height: auto; }
+      header { height: auto; flex-wrap: wrap; padding: 12px; }
+      .layout { height: auto; grid-template-columns: 1fr; justify-items: center; padding: 16px; }
+      .notes { max-height: none; width: min(640px, 100%); }
+      .laptop { width: min(860px, 100%); height: 720px; }
+      .split, .stats { grid-template-columns: 1fr 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="mark">R</span>
+      <div>
+        <strong>ReserveFlow</strong>
+        <em>A concept for Micah</em>
+      </div>
+    </div>
+    <div class="modes">
+      <button type="button" data-act="mode" data-arg="customer" class="on">Customer app</button>
+      <button type="button" data-act="mode" data-arg="admin">Business dashboard</button>
+    </div>
+    <div class="pager">
+      <button type="button" class="ghost" data-act="prev">Back</button>
+      <span id="step">1 / 14</span>
+      <button type="button" class="next" id="nextBtn" data-act="next">Next</button>
+      <button type="button" class="ghost" data-act="reset">Reset</button>
+    </div>
+  </header>
+  <main id="layout" class="layout"></main>
+  <div id="toast" role="status"></div>
+  <script>
+    const TODAY = "2026-10-19";
+    const FULL_DAYS = ["2026-10-21"];
+    const SERVICES = [
+      { id: "intro", name: "Introductory consultation", desc: "A first conversation about what is needed and the right next step.", duration: "30 min", minutes: 30, price: 0, priceLabel: "Complimentary" },
+      { id: "strategy", name: "Strategy session", desc: "A working session to set priorities and agree on a plan.", duration: "60 min", minutes: 60, price: 180, priceLabel: "$180" },
+      { id: "review", name: "Document review", desc: "A focused review of paperwork, with notes on what needs attention.", duration: "45 min", minutes: 45, price: 120, priceLabel: "$120" },
+      { id: "followup", name: "Follow-up meeting", desc: "A shorter check-in on progress and open questions.", duration: "30 min", minutes: 30, price: 75, priceLabel: "$75" }
+    ];
+    const ADDONS = [
+      { id: "priority", name: "Priority booking", price: "$4.99", detail: "Earlier access to newly opened times." },
+      { id: "reminders", name: "Extra reminders", price: "$2.99", detail: "An additional reminder on the day of the reservation." },
+      { id: "credits", name: "Booking credits", price: "$19.99", detail: "A pack of credits toward future reservations." }
+    ];
+    const ICONS = {
+      home: '<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1Z"/>',
+      calendar: '<path d="M8 3v3M16 3v3M4 9h16"/><rect x="4" y="5" width="16" height="16" rx="2"/>',
+      user: '<path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+      list: '<path d="M9 7h11M9 12h11M9 17h11M4 7h.01M4 12h.01M4 17h.01"/>',
+      bell: '<path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+      search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+      back: '<path d="M15 5 8 12l7 7"/>',
+      chev: '<path d="m9 6 6 6-6 6"/>',
+      check: '<path d="m5 12 5 5L20 7"/>',
+      signal: '<path d="M5 17v2M9 13v6M13 9v10M17 5v14"/>',
+      wifi: '<path d="M5 10a9 9 0 0 1 14 0"/><path d="M8 13a5 5 0 0 1 8 0"/><path d="M12 17h.01"/>',
+      battery: '<rect x="3" y="8" width="16" height="8" rx="2"/><path d="M21 11v2"/>',
+      grid: '<rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/>',
+      sliders: '<path d="M4 8h16M4 16h16"/><circle cx="8" cy="8" r="2"/><circle cx="16" cy="16" r="2"/>',
+      card: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'
+    };
+
+    const state = {
+      mode: "customer",
+      screen: "home",
+      tour: 0,
+      customerScreen: "home",
+      adminScreen: "overview",
+      draft: { serviceId: null, date: "2026-10-22", time: null, note: "", consent: false, payNow: true, meet: "video", advisor: "first", rescheduleId: null },
+      profile: { name: "Alex Morgan", email: "alex.morgan@example.com", phone: "(555) 010-2290" },
+      prefs: { confirmations: true, reminders: true, changes: true, receipts: true },
+      rules: { cancelHours: 24 },
+      approval: { intro: true, strategy: false, review: false, followup: false },
+      bookings: [
+        { id: "b1", ref: "RF-20422", customer: "Alex Morgan", owner: "alex", serviceId: "strategy", date: "2026-10-22", time: "10:00", status: "confirmed", pay: "paid", amount: 180, note: "Review the quarterly priorities.", meet: "video", advisor: "assigned" },
+        { id: "b2", ref: "RF-20428", customer: "Alex Morgan", owner: "alex", serviceId: "review", date: "2026-10-28", time: "14:30", status: "confirmed", pay: "due", amount: 120, note: "", meet: "video", advisor: "first" },
+        { id: "b3", ref: "RF-20503", customer: "Alex Morgan", owner: "alex", serviceId: "intro", date: "2026-11-03", time: "09:00", status: "pending", pay: "none", amount: 0, note: "First conversation.", meet: "office", advisor: "first" },
+        { id: "b4", ref: "RF-19880", customer: "Alex Morgan", owner: "alex", serviceId: "followup", date: "2026-09-30", time: "15:00", status: "completed", pay: "paid", amount: 75, note: "", meet: "video", advisor: "assigned" },
+        { id: "b5", ref: "RF-20419", customer: "Jordan Lee", owner: "jordan", serviceId: "review", date: "2026-10-19", time: "09:00", status: "confirmed", pay: "paid", amount: 120, note: "Bring the signed forms.", meet: "office", advisor: "assigned" },
+        { id: "b6", ref: "RF-20431", customer: "Sam Patel", owner: "sam", serviceId: "intro", date: "2026-10-19", time: "11:30", status: "pending", pay: "none", amount: 0, note: "Asked for a morning introduction.", meet: "video", advisor: "first" }
+      ],
+      notifications: [
+        { id: "n1", unread: true, kind: "reminder", title: "Reminder", body: "Strategy session is Thursday, Oct 22 at 10:00 AM Central.", time: "Today · 8:00 AM", bookingId: "b1" },
+        { id: "n2", unread: true, kind: "confirmation", title: "Reservation confirmed", body: "Document review on Wed, Oct 28 at 2:30 PM is confirmed.", time: "Yesterday", bookingId: "b2" },
+        { id: "n3", unread: false, kind: "payment", title: "Receipt", body: "$180.00 paid for the strategy session. Reference RF-20422.", time: "Oct 15", bookingId: "b1" },
+        { id: "n4", unread: false, kind: "change", title: "Completed", body: "The follow-up on Sep 30 was marked complete.", time: "Sep 30", bookingId: "b4" }
+      ],
+      blocks: [
+        { id: "k1", date: "2026-10-19", time: "16:00", reason: "Team meeting" },
+        { id: "k2", date: "2026-10-24", time: "13:00", reason: "Office closed" },
+        { id: "k3", date: "2026-10-24", time: "14:30", reason: "Office closed" },
+        { id: "k4", date: "2026-10-24", time: "16:00", reason: "Office closed" }
+      ],
+      activity: [
+        { text: "Sam Patel requested an introductory consultation for 11:30 AM.", time: "7:50 AM" },
+        { text: "Jordan Lee is confirmed for document review at 9:00 AM.", time: "7:10 AM" },
+        { text: "Alex Morgan booked a strategy session for Oct 22.", time: "Oct 15" }
+      ],
+      addons: [],
+      bookingTab: "upcoming",
+      serviceQuery: "",
+      adminQuery: "",
+      adminFilter: "all",
+      calView: "week",
+      adminDate: TODAY,
+      monthA: { y: 2026, m: 10 },
+      monthC: { y: 2026, m: 10 },
+      myDate: "2026-10-22",
+      sheet: null,
+      detailId: null,
+      successId: null,
+      form: null
+    };
+
+    const NOTES = {
+      "customer:home": { kicker: "Customer app", title: "Home", text: "Booking starts here, with the next reservation already in view.", points: ["A welcome and the customer’s profile", "Search, or book in one step", "Shortcuts to services, open times, and help"], tags: ["Customer experience"] },
+      "customer:services": { kicker: "Customer app", title: "Choose a service", text: "The customer picks what to reserve before choosing a time.", points: ["Duration and price stay visible", "Video call or an office visit", "First available advisor, or a specific one"], tags: ["Services"] },
+      "customer:availability": { kicker: "Customer app", title: "Open times", text: "Open, booked, and blocked times are visible before anyone commits.", points: ["A calendar with live openings", "Capacity, such as two seats at 2:30 PM", "Times shown in Central Time"], tags: ["Availability controls"] },
+      "customer:confirm": { kicker: "Customer app", title: "Confirm the reservation", text: "Service, time, notes, consent, and payment sit on one screen.", points: ["A clear summary before anything is saved", "Pay now, or reserve and pay later", "The cancellation window is stated in plain language"], tags: ["Booking"] },
+      "customer:success": { kicker: "Customer app", title: "Confirmed", text: "The customer gets a reference immediately, and can save it to their phone calendar.", points: ["A booking reference", "Add to the phone calendar", "The same reservation appears for the business"], tags: ["Booking", "Calendar"] },
+      "customer:bookings": { kicker: "Customer app", title: "My reservations", text: "After booking, the customer can see status, reschedule, or cancel within the rules.", points: ["Upcoming and past reservations", "Payment status and reference", "Changes follow the cancellation window"], tags: ["Reservation management"] },
+      "customer:detail": { kicker: "Customer app", title: "Reservation detail", text: "Every detail of one reservation, with room to change or cancel it.", points: ["Service, time, location, and notes", "Payment status", "Reschedule and cancel when the rules allow"], tags: ["Reservation management"] },
+      "customer:calendar": { kicker: "Customer app", title: "Personal calendar", text: "The customer’s own reservations, on a month calendar they can also save to their phone.", points: ["Days with a reservation are marked", "Tap a day to see the details", "Add it to the phone calendar"], tags: ["Integrated calendar"] },
+      "customer:notifications": { kicker: "Customer app", title: "Notifications", text: "Confirmations, reminders, changes, and receipts arrive in one place.", points: ["Read and unread", "Each kind of alert can be paused", "Tap a message to open the reservation"], tags: ["Customer notifications"] },
+      "customer:profile": { kicker: "Customer app", title: "Profile", text: "Account details, security, purchases, and privacy live with the customer.", points: ["Name, email, and phone", "Password reset", "Privacy and account deletion"], tags: ["Secure profile"] },
+      "customer:security": { kicker: "Customer app", title: "Security", text: "Sign-in recovery and a clear way to leave the account.", points: ["Password reset by email", "This device stays signed in", "Sign out returns to the sign-in screen"], tags: ["Secure profile"] },
+      "customer:privacy": { kicker: "Customer app", title: "Privacy and data", text: "The customer can request a copy of their data, or ask for the account to be deleted.", points: ["Download a copy of the account", "Account deletion is a deliberate step", "Nothing is deleted in this preview"], tags: ["Secure profile"] },
+      "customer:purchases": { kicker: "Customer app", title: "Payments and add-ons", text: "Reservation fees and optional in-app add-ons are shown separately, because they follow different rules.", points: ["Receipts for paid reservations", "Sample add-ons at a preview price", "A preview purchase does not charge anyone"], tags: ["In-app purchases"] },
+      "customer:help": { kicker: "Customer app", title: "Help", text: "A short explanation of how a reservation works, plus the business’s own contact line.", points: ["Three steps: service, time, confirm", "The cancellation window", "Room for the business’s real contact details"], tags: ["Customer experience"] },
+      "customer:auth": { kicker: "Customer app", title: "Sign in", text: "Registration, sign-in, and password recovery are part of the same secure account.", points: ["Email and password", "Password recovery", "A sample account is ready to enter"], tags: ["Secure profile"] },
+      "admin:overview": { kicker: "Business dashboard", title: "Today at a glance", text: "The owner sees who is coming, which times are open, and what is waiting for a decision.", points: ["Today’s reservations and open slots", "Pending requests can be confirmed here", "Recent activity stays on the side"], tags: ["Admin scheduling"] },
+      "admin:calendar": { kicker: "Business dashboard", title: "Scheduling", text: "Day, week, and month control. Blocking a time removes it for customers.", points: ["Create a reservation on an open slot", "Block or reopen a time", "A blocked time updates the customer calendar"], tags: ["Admin scheduling", "Calendar"] },
+      "admin:bookings": { kicker: "Business dashboard", title: "All reservations", text: "Search, filter, approve, or cancel every reservation from one list.", points: ["Filter by status", "Pending requests can be approved or declined", "Notes stay with the booking"], tags: ["Admin scheduling"] },
+      "admin:services": { kicker: "Business dashboard", title: "Services and rules", text: "Hours, prices, approval, and the cancellation window are settings the business controls.", points: ["Duration, price, and approval", "Hours, buffers, and how far ahead people can book", "Staff roles are a later option"], tags: ["Availability controls"] },
+      "admin:payments": { kicker: "Business dashboard", title: "Payments", text: "Reservation payments and in-app add-ons sit side by side so the revenue model can be chosen deliberately.", points: ["Paid, due, and complimentary reservations", "Sample add-ons for digital extras", "The right checkout depends on what is being sold"], tags: ["In-app purchases"] }
+    };
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function icon(name) {
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ""}</svg>`;
+    }
+    function parseISO(iso) {
+      const [y, m, d] = iso.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+    function isoFrom(dt) {
+      return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+    }
+    function addDays(iso, n) {
+      const dt = parseISO(iso);
+      dt.setDate(dt.getDate() + n);
+      return isoFrom(dt);
+    }
+    function addMinutes(t, mins) {
+      const [h, m] = t.split(":").map(Number);
+      const total = h * 60 + m + mins;
+      return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+    }
+    function prettyTime(t) {
+      const [h, m] = t.split(":").map(Number);
+      const ap = h >= 12 ? "PM" : "AM";
+      return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${ap}`;
+    }
+    function rangeLabel(time, mins) {
+      const end = addMinutes(time, mins);
+      const ap = x => (Number(x.split(":")[0]) >= 12 ? "PM" : "AM");
+      const fmt = (tm, withAp) => {
+        const [h, m] = tm.split(":").map(Number);
+        return `${h % 12 || 12}:${String(m).padStart(2, "0")}${withAp ? " " + ap(tm) : ""}`;
+      };
+      return ap(time) === ap(end) ? `${fmt(time, false)} – ${fmt(end, true)}` : `${fmt(time, true)} – ${fmt(end, true)}`;
+    }
+    function prettyDate(iso) {
+      return parseISO(iso).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    }
+    function prettyDateLong(iso) {
+      return parseISO(iso).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+    }
+    function monthTitle(y, m) {
+      return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    }
+    function serviceById(id) { return SERVICES.find(s => s.id === id) || SERVICES[0]; }
+    function initials(name) {
+      return name.split(" ").filter(Boolean).slice(0, 2).map(p => p[0]).join("").toUpperCase() || "A";
+    }
+    function firstName() { return (state.profile.name || "Alex").split(" ")[0]; }
+    function meetLabel(v) { return v === "office" ? "In person" : "Video call"; }
+    function advisorLabel(v) { return v === "assigned" ? "Assigned advisor" : "First available"; }
+    function pill(status) {
+      const map = { confirmed: "Confirmed", pending: "Pending", cancelled: "Cancelled", completed: "Completed" };
+      return `<span class="pill pill-${status}">${map[status] || esc(status)}</span>`;
+    }
+    function payLabel(b) {
+      if (!b.amount) return "Complimentary";
+      if (b.pay === "paid") return "Paid";
+      if (b.pay === "due") return "Pay later";
+      return "Not due yet";
+    }
+    function setField(path, value) {
+      const parts = path.split(".");
+      let obj = state;
+      for (let i = 0; i < parts.length - 1; i++) obj = obj[parts[i]];
+      obj[parts[parts.length - 1]] = value;
+    }
+    function timeSlots(date) {
+      const dow = parseISO(date).getDay();
+      if (dow === 0) return [];
+      const times = dow === 6 ? ["09:00", "10:30", "12:00"] : ["09:00", "10:00", "11:30", "13:00", "14:30", "16:00"];
+      const full = FULL_DAYS.includes(date);
+      return times.map(t => {
+        const cap = t === "14:30" && dow !== 6 ? 2 : 1;
+        const bookings = state.bookings.filter(b => b.date === date && b.time === t && b.status !== "cancelled");
+        const block = state.blocks.find(b => b.date === date && b.time === t) || null;
+        let status = "open";
+        let label = cap === 2 ? "2 openings" : "Available";
+        if (block && bookings.length === 0) {
+          status = "blocked";
+          label = block.reason || "Unavailable";
+        } else if (bookings.length >= cap) {
+          status = "booked";
+          label = bookings.some(b => b.owner === "alex") ? "Your booking" : "Booked";
+        } else if (full) {
+          status = "booked";
+          label = "Booked";
+        } else if (cap === 2 && bookings.length === 1) {
+          label = "1 opening left";
+        }
+        return { t, cap, bookings, block, status, label };
+      });
+    }
+    function alexHolds(slot) {
+      return slot.bookings.some(b => b.owner === "alex");
+    }
+    function customerCanTake(slot) {
+      return slot.status === "open" && !alexHolds(slot);
+    }
+    function dayTone(iso) {
+      const slots = timeSlots(iso);
+      if (!slots.length) return "closed";
+      if (slots.every(s => s.status !== "open")) return "full";
+      return "open";
+    }
+    function myBookings(which) {
+      const list = state.bookings.filter(b => b.owner === "alex");
+      const past = b => b.status === "completed" || b.status === "cancelled" || b.date < TODAY;
+      const rows = which === "past"
+        ? list.filter(past)
+        : list.filter(b => !past(b));
+      rows.sort((a, b) => which === "past" ? (b.date + b.time).localeCompare(a.date + a.time) : (a.date + a.time).localeCompare(b.date + b.time));
+      return rows;
+    }
+    function nextUp() {
+      const list = myBookings("upcoming");
+      return list.find(b => b.status === "confirmed") || list[0] || null;
+    }
+    function unread() { return state.notifications.filter(n => n.unread).length; }
+    function mondayOf(iso) {
+      const day = parseISO(iso).getDay();
+      return addDays(iso, day === 0 ? -6 : 1 - day);
+    }
+    function monthCells(y, m) {
+      const first = new Date(y, m - 1, 1);
+      let lead = first.getDay() - 1;
+      if (lead < 0) lead = 6;
+      const count = new Date(y, m, 0).getDate();
+      const cells = Array(lead).fill(null);
+      for (let d = 1; d <= count; d++) cells.push(isoFrom(new Date(y, m - 1, d)));
+      while (cells.length % 7) cells.push(null);
+      return cells;
+    }
+    function hoursUntil(date, time) {
+      const start = new Date(`${date}T${time}:00`);
+      const now = new Date(`${TODAY}T08:30:00`);
+      return (start - now) / 36e5;
+    }
+    function addNotif(n) {
+      state.notifications.unshift({ id: "n" + Date.now(), unread: true, time: "Just now", ...n });
+    }
+    function bookingById(id) { return state.bookings.find(b => b.id === id); }
+
+    const TOUR = [
+      { mode: "customer", screen: "home" },
+      { mode: "customer", screen: "services" },
+      { mode: "customer", screen: "availability", prep() { if (!state.draft.serviceId) state.draft.serviceId = "strategy"; } },
+      { mode: "customer", screen: "confirm", prep() {
+        if (!state.draft.serviceId) state.draft.serviceId = "strategy";
+        if (!state.draft.date) state.draft.date = "2026-10-22";
+        const open = timeSlots(state.draft.date).filter(customerCanTake);
+        if (!open.some(s => s.t === state.draft.time)) state.draft.time = open[0] ? open[0].t : null;
+      } },
+      { mode: "customer", screen: "bookings" },
+      { mode: "customer", screen: "calendar" },
+      { mode: "customer", screen: "notifications" },
+      { mode: "customer", screen: "profile" },
+      { mode: "admin", screen: "overview" },
+      { mode: "admin", screen: "calendar" },
+      { mode: "admin", screen: "bookings" },
+      { mode: "admin", screen: "services" },
+      { mode: "admin", screen: "payments" },
+      { mode: "close", screen: "close" }
+    ];
+
+    function statusBar(light) {
+      return `<div class="status ${light ? "light" : ""}"><span>8:41</span><span class="status-icons">${icon("signal")}${icon("wifi")}${icon("battery")}</span></div>`;
+    }
+    function tabbar() {
+      const items = [["home", "Home", "home"], ["bookings", "Bookings", "list"], ["calendar", "Calendar", "calendar"], ["profile", "Profile", "user"]];
+      return `<nav class="tabbar">${items.map(([id, label, ic]) => `<button type="button" class="tab ${state.screen === id ? "on" : ""}" data-act="screen" data-arg="${id}">${icon(ic)}<span>${label}</span></button>`).join("")}</nav>`;
+    }
+    function topbar(title, back) {
+      return `<div class="m-top">${back ? `<button type="button" class="icon-btn" data-act="screen" data-arg="${back}" aria-label="Back">${icon("back")}</button>` : `<span class="icon-btn"></span>`}<h1>${esc(title)}</h1><span class="icon-btn"></span></div>`;
+    }
+    function calendarHtml(y, m, selected, mode) {
+      const min = mode === "customer" ? 9 : 10;
+      const prevOk = !(y === 2026 && m <= min);
+      const nextOk = !(y === 2026 && m >= 12);
+      const cells = monthCells(y, m);
+      const days = cells.map(iso => {
+        if (!iso) return `<span></span>`;
+        const tone = dayTone(iso);
+        const mine = state.bookings.some(b => b.owner === "alex" && b.date === iso && b.status !== "cancelled");
+        const past = iso < TODAY;
+        const disabled = mode === "availability" && past;
+        const cls = ["day", past && mode === "availability" ? "muted" : "", iso === selected ? "sel" : "", iso === TODAY ? "today" : "", tone === "full" ? "full" : ""].filter(Boolean).join(" ");
+        const dot = tone === "open" || tone === "full" || mine ? `<i class="mark"></i>` : "";
+        return `<button type="button" class="${cls}" ${disabled ? "disabled" : ""} data-act="date" data-arg="${iso}">${Number(iso.slice(-2))}${dot}</button>`;
+      }).join("");
+      const dows = ["M", "T", "W", "T", "F", "S", "S"].map(d => `<span class="dow">${d}</span>`).join("");
+      return `<div class="cal-head"><button type="button" class="icon-btn" data-act="month" data-arg="-1" ${prevOk ? "" : "disabled"} aria-label="Previous month">${icon("back")}</button><b>${esc(monthTitle(y, m))}</b><button type="button" class="icon-btn" data-act="month" data-arg="1" ${nextOk ? "" : "disabled"} aria-label="Next month">${icon("chev")}</button></div><div class="cal">${dows}${days}</div>`;
+    }
+
+    function viewHome() {
+      const n = nextUp();
+      const svc = n ? serviceById(n.serviceId) : null;
+      const badge = unread() ? `<span class="badge">${unread()}</span>` : "";
+      const card = n ? `<button type="button" class="nextcard" data-act="detail" data-arg="${n.id}"><div class="kicker">Next reservation</div><h3>${esc(svc.name)}</h3><div class="meta">${esc(prettyDate(n.date))} · ${esc(rangeLabel(n.time, svc.minutes))} CT</div><div class="rowline">${pill(n.status)}<span class="meta">${esc(n.ref)}</span></div></button>`
+        : `<div class="nextcard"><div class="kicker">Next reservation</div><h3>Nothing coming up</h3><button type="button" class="linkish" data-act="screen" data-arg="services">Book a reservation</button></div>`;
+      return `<div class="home-hero"><div class="hero-top"><div><div class="biz">Northline</div><div class="biz-sub">Reservations</div></div><button type="button" class="bell" data-act="screen" data-arg="notifications" aria-label="Notifications">${icon("bell")}${badge}</button></div><div class="hello">Good morning</div><div class="hello-row"><strong>${esc(firstName())}</strong><button type="button" class="avatar" data-act="screen" data-arg="profile" aria-label="Profile">${esc(initials(state.profile.name))}</button></div><button type="button" class="search" data-act="screen" data-arg="services">${icon("search")} Search services</button><button type="button" class="cta-light" data-act="screen" data-arg="services">Book a reservation</button></div>${card}<div class="section-label kicker">Shortcuts</div><div class="pad" style="padding-top:0"><div class="qrow"><button type="button" class="qbtn" data-act="screen" data-arg="services">Services</button><button type="button" class="qbtn" data-act="screen" data-arg="availability">Open times</button><button type="button" class="qbtn" data-act="screen" data-arg="help">Help</button></div></div>`;
+    }
+    function viewServices() {
+      const q = state.serviceQuery.trim().toLowerCase();
+      const list = SERVICES.filter(s => !q || (s.name + s.desc).toLowerCase().includes(q));
+      const cards = list.length ? list.map(s => `<button type="button" class="svc ${state.draft.serviceId === s.id ? "sel" : ""}" data-act="service" data-arg="${s.id}"><b>${esc(s.name)}</b><p>${esc(s.desc)}</p><span class="meta">${esc(s.duration)} · ${esc(s.priceLabel)}${state.approval[s.id] ? " · Confirmed by the business" : ""}</span></button>`).join("") : `<p class="meta">No services match that search.</p>`;
+      return `${topbar("Services", "home")}<div class="pad"><input class="field" data-field="serviceQuery" data-live="1" placeholder="Search services" value="${esc(state.serviceQuery)}" aria-label="Search services" /><div class="label">How to meet</div><div class="chips"><button type="button" class="chip ${state.draft.meet === "video" ? "sel" : ""}" data-act="meet" data-arg="video">Video call</button><button type="button" class="chip ${state.draft.meet === "office" ? "sel" : ""}" data-act="meet" data-arg="office">In person</button></div><div class="label">Advisor</div><div class="chips"><button type="button" class="chip ${state.draft.advisor === "first" ? "sel" : ""}" data-act="advisor" data-arg="first">First available</button><button type="button" class="chip ${state.draft.advisor === "assigned" ? "sel" : ""}" data-act="advisor" data-arg="assigned">Assigned advisor</button></div>${cards}</div>`;
+    }
+    function viewAvailability() {
+      const svc = state.draft.serviceId ? serviceById(state.draft.serviceId) : null;
+      const slots = timeSlots(state.draft.date);
+      const moving = state.draft.rescheduleId ? bookingById(state.draft.rescheduleId) : null;
+      const banner = moving ? `<div class="banner">Moving ${esc(moving.ref)} to a new time.</div>` : (svc ? `<div class="banner">${esc(svc.name)} · ${esc(svc.duration)} · ${esc(svc.priceLabel)}</div>` : `<div class="banner">Pick a time, then choose a service.</div>`);
+      let body;
+      if (!slots.length) body = `<p class="meta">Sunday is closed. Choose another date.</p>`;
+      else if (slots.every(s => !customerCanTake(s))) body = `<div class="slots">${slotButtons(slots)}</div><p class="meta" style="margin-top:10px">This day is fully booked. Choose another date.</p>`;
+      else body = `<div class="slots">${slotButtons(slots)}</div>`;
+      return `${topbar("Availability", moving ? "detail" : "services")}<div class="pad">${banner}${calendarHtml(state.monthA.y, state.monthA.m, state.draft.date, "availability")}<div class="legend-row"><span><i class="d-open"></i>Open</span><span><i class="d-booked"></i>Booked</span><span><i class="d-block"></i>Unavailable</span></div><p class="meta" style="margin-top:0">Central Time · Mon–Fri 9–5, Sat 9–12</p>${body}</div>`;
+    }
+    function slotButtons(slots) {
+      return slots.map(s => {
+        const mine = alexHolds(s);
+        const selectable = customerCanTake(s);
+        const label = mine && s.status === "open" ? "Your booking" : s.label;
+        const cls = state.draft.time === s.t && selectable ? "slot sel" : "slot";
+        return `<button type="button" class="${cls}" data-act="time" data-arg="${s.t}" ${selectable ? "" : "disabled"}><b>${esc(prettyTime(s.t))}</b><em>${esc(label)}</em></button>`;
+      }).join("");
+    }
+    function viewConfirm() {
+      const svc = serviceById(state.draft.serviceId);
+      const moving = !!state.draft.rescheduleId;
+      const soon = hoursUntil(state.draft.date, state.draft.time) < state.rules.cancelHours;
+      const pay = svc.price > 0 && !moving ? `<div class="label">Payment</div><div class="chips"><button type="button" class="chip ${state.draft.payNow ? "sel" : ""}" data-act="pay" data-arg="now">Pay now · ${esc(svc.priceLabel)}</button><button type="button" class="chip ${!state.draft.payNow ? "sel" : ""}" data-act="pay" data-arg="later">Reserve now, pay later</button></div>` : (svc.price === 0 ? `<p class="meta">No payment is due for this complimentary reservation.</p>` : "");
+      const approval = state.approval[svc.id] && !moving ? `<p class="meta">Northline confirms this request before it is final.</p>` : "";
+      const late = soon ? `<p class="meta">This time is inside the ${state.rules.cancelHours}-hour window, so a late change rule can apply.</p>` : "";
+      return `${topbar(moving ? "New time" : "Confirm", "availability")}<div class="pad"><div class="summary"><div class="kicker">${esc(moving ? "Updated reservation" : "New reservation")}</div><h3>${esc(svc.name)}</h3><p class="meta">${esc(prettyDate(state.draft.date))}</p><p class="meta">${esc(rangeLabel(state.draft.time, svc.minutes))} CT</p><p class="meta">${esc(meetLabel(state.draft.meet))} · ${esc(advisorLabel(state.draft.advisor))}</p>${approval}</div><label class="label">Your details</label><input class="field" readonly value="${esc(state.profile.name)}" /><div style="height:8px"></div><input class="field" readonly value="${esc(state.profile.email)}" /><label class="label">Special requests</label><textarea data-field="draft.note" placeholder="Anything the business should know?">${esc(state.draft.note)}</textarea>${pay}${late}</div>`;
+    }
+    function viewSuccess() {
+      const b = bookingById(state.successId) || nextUp();
+      if (!b) return `${topbar("Confirmed", "home")}<div class="pad"><p>Your reservation is saved.</p></div>`;
+      const svc = serviceById(b.serviceId);
+      const pending = b.status === "pending";
+      return `<div class="center"><div class="ok ${pending ? "pending" : ""}">${icon("check")}</div><h2>${pending ? "Request sent" : "You’re reserved"}</h2><p class="meta">${pending ? "Northline will confirm this request." : "The time is held for you."}</p></div><div class="refbox"><span>Reference</span><b>${esc(b.ref)}</b></div><div class="center"><p><b>${esc(svc.name)}</b></p><p class="meta">${esc(prettyDate(b.date))} · ${esc(rangeLabel(b.time, svc.minutes))} CT</p></div><div class="pad stack"><button type="button" class="btn" data-act="detail" data-arg="${b.id}">View reservation</button><button type="button" class="btn-secondary" data-act="add-cal" data-arg="${b.id}">Add to phone calendar</button><button type="button" class="linkish" data-act="screen" data-arg="home">Back to home</button><button type="button" class="linkish" data-act="mode" data-arg="admin">See it on the business schedule</button></div>`;
+    }
+    function viewBookings() {
+      const rows = myBookings(state.bookingTab);
+      const list = rows.length ? rows.map(b => {
+        const svc = serviceById(b.serviceId);
+        return `<button type="button" class="book" data-act="detail" data-arg="${b.id}"><div class="rowline"><h3>${esc(svc.name)}</h3>${pill(b.status)}</div><div class="meta">${esc(prettyDate(b.date))} · ${esc(rangeLabel(b.time, svc.minutes))}</div><div class="rowline"><span class="meta">${esc(b.ref)}</span><span class="meta">${esc(payLabel(b))}</span></div></button>`;
+      }).join("") : `<p class="meta">${state.bookingTab === "past" ? "No past reservations yet." : "No upcoming reservations."}</p>${state.bookingTab === "upcoming" ? `<button type="button" class="btn" data-act="screen" data-arg="services">Book a reservation</button>` : ""}`;
+      return `${topbar("My reservations")}<div class="pad"><div class="seg"><button type="button" class="${state.bookingTab === "upcoming" ? "on" : ""}" data-act="tab" data-arg="upcoming">Upcoming</button><button type="button" class="${state.bookingTab === "past" ? "on" : ""}" data-act="tab" data-arg="past">Past</button></div>${list}</div>`;
+    }
+    function viewDetail() {
+      const b = bookingById(state.detailId);
+      if (!b) return viewBookings();
+      const svc = serviceById(b.serviceId);
+      const open = b.status === "confirmed" || b.status === "pending";
+      const actions = open ? `<button type="button" class="btn" data-act="reschedule" data-arg="${b.id}">Reschedule</button><button type="button" class="btn-secondary" data-act="add-cal" data-arg="${b.id}">Add to phone calendar</button><button type="button" class="btn btn-danger" data-act="ask-cancel" data-arg="${b.id}">Cancel reservation</button>` : `<button type="button" class="btn-secondary" data-act="add-cal" data-arg="${b.id}">Add to phone calendar</button>`;
+      return `${topbar("Reservation", "bookings")}<div class="pad"><div class="summary"><div class="rowline"><h3>${esc(svc.name)}</h3>${pill(b.status)}</div><p class="meta">${esc(prettyDate(b.date))}</p><p class="meta">${esc(rangeLabel(b.time, svc.minutes))} CT</p><p class="meta">${esc(meetLabel(b.meet))} · ${esc(advisorLabel(b.advisor))}</p><p class="meta">${esc(b.ref)} · ${esc(payLabel(b))}${b.amount ? " · " + esc(svc.priceLabel) : ""}</p>${b.note ? `<p class="meta">${esc(b.note)}</p>` : ""}</div><div class="stack">${actions}</div></div>`;
+    }
+    function viewCalendar() {
+      const items = state.bookings.filter(b => b.owner === "alex" && b.date === state.myDate && b.status !== "cancelled");
+      const list = items.length ? items.map(b => {
+        const svc = serviceById(b.serviceId);
+        return `<button type="button" class="book" data-act="detail" data-arg="${b.id}"><h3>${esc(svc.name)}</h3><div class="meta">${esc(rangeLabel(b.time, svc.minutes))} · ${esc(b.ref)}</div><div class="rowline">${pill(b.status)}<span class="meta">${esc(meetLabel(b.meet))}</span></div></button>`;
+      }).join("") : `<p class="meta">Nothing reserved on this day.</p>`;
+      return `${topbar("Calendar")}<div class="pad">${calendarHtml(state.monthC.y, state.monthC.m, state.myDate, "customer")}<div style="height:12px"></div>${list}<button type="button" class="btn-secondary" data-act="add-cal" data-arg="${items[0] ? items[0].id : ""}" ${items.length ? "" : "disabled"}>Add to phone calendar</button></div>`;
+    }
+    function viewNotifications() {
+      const paused = ["confirmations", "reminders", "changes", "receipts"].filter(k => !state.prefs[k]);
+      const labels = { confirmations: "confirmations", reminders: "reminders", changes: "change alerts", receipts: "receipts" };
+      const banner = paused.length ? `<div class="banner">Paused: ${paused.map(k => labels[k]).join(", ")}.</div>` : "";
+      const list = state.notifications.map(n => `<button type="button" class="note ${n.unread ? "unread" : ""}" data-act="open-note" data-arg="${n.id}"><i class="dot"></i><span><b>${esc(n.title)}</b><span class="sub">${esc(n.body)}</span><span class="sub">${esc(n.time)}</span></span></button>`).join("");
+      const prefs = [
+        ["confirmations", "Booking confirmations"],
+        ["reminders", "Reminders, 24 hours before"],
+        ["changes", "Changes and cancellations"],
+        ["receipts", "Payment receipts"]
+      ].map(([k, label]) => `<div class="pref"><span>${label}</span><button type="button" class="switch ${state.prefs[k] ? "on" : ""}" data-act="pref" data-arg="${k}" aria-label="${label}"><i></i></button></div>`).join("");
+      return `${topbar("Notifications", "home")}<div class="pad"><div class="rowline"><span class="meta">${unread()} unread</span><button type="button" class="linkish" data-act="mark-all">Mark all read</button></div>${banner}${list}<div class="section-label kicker" style="padding-left:0">Preferences</div>${prefs}</div>`;
+    }
+    function viewProfile() {
+      return `${topbar("Profile")}<div class="pad"><div class="avatar-lg">${esc(initials(state.profile.name))}</div><div class="center" style="padding:0"><b>${esc(state.profile.name)}</b><div class="meta">${esc(state.profile.email)}</div></div><label class="label">Name</label><input class="field" data-field="profile.name" value="${esc(state.profile.name)}" /><label class="label">Email</label><input class="field" data-field="profile.email" value="${esc(state.profile.email)}" /><label class="label">Phone</label><input class="field" data-field="profile.phone" value="${esc(state.profile.phone)}" /><div style="height:10px"></div><button type="button" class="btn" data-act="save-profile">Save profile</button><button type="button" class="row" data-act="screen" data-arg="security"><span><b>Security</b><small>Password reset and sign-in</small></span>${icon("chev")}</button><button type="button" class="row" data-act="screen" data-arg="notifications"><span><b>Notifications</b><small>Confirmations, reminders, receipts</small></span>${icon("chev")}</button><button type="button" class="row" data-act="screen" data-arg="purchases"><span><b>Purchases</b><small>Reservation payments and add-ons</small></span>${icon("chev")}</button><button type="button" class="row" data-act="screen" data-arg="privacy"><span><b>Privacy and data</b><small>Download or delete the account</small></span>${icon("chev")}</button></div>`;
+    }
+    function viewSecurity() {
+      return `${topbar("Security", "profile")}<div class="pad"><p class="meta">Password reset and sign-in stay with this account.</p><button type="button" class="row" data-act="reset-pass"><span><b>Reset password</b><small>Send a link to ${esc(state.profile.email)}</small></span>${icon("chev")}</button><div class="row"><span><b>This phone</b><small>Signed in · sample session</small></span></div><div style="height:12px"></div><button type="button" class="btn-secondary" data-act="sign-out">Sign out</button></div>`;
+    }
+    function viewPrivacy() {
+      return `${topbar("Privacy", "profile")}<div class="pad"><p class="meta">The customer stays in control of their account data.</p><button type="button" class="row" data-act="download"><span><b>Download my data</b><small>A copy of profile and reservations</small></span>${icon("chev")}</button><button type="button" class="btn btn-danger" data-act="ask-delete">Delete account</button></div>`;
+    }
+    function viewPurchases() {
+      const pays = state.bookings.filter(b => b.owner === "alex" && b.amount > 0);
+      const history = pays.map(b => `<div class="pay-row"><div><b>${esc(serviceById(b.serviceId).name)}</b><span class="sub">${esc(b.ref)} · ${esc(prettyDate(b.date))}</span></div><div style="margin-left:auto;text-align:right"><b>$${b.amount}</b><span class="sub">${esc(payLabel(b))}</span></div></div>`).join("");
+      const extras = state.addons.map(id => ADDONS.find(a => a.id === id)).filter(Boolean).map(a => `<div class="pay-row"><div><b>${esc(a.name)}</b><span class="sub">In-app add-on · preview</span></div><div style="margin-left:auto"><b>${esc(a.price)}</b></div></div>`).join("");
+      const store = ADDONS.map(a => {
+        const owned = state.addons.includes(a.id);
+        return `<div class="addon"><b>${esc(a.name)}</b> · ${esc(a.price)}<p>${esc(a.detail)}</p><button type="button" class="btn-secondary" data-act="buy" data-arg="${a.id}" ${owned ? "disabled" : ""}>${owned ? "Added in this preview" : "Preview purchase"}</button></div>`;
+      }).join("");
+      return `${topbar("Purchases", "profile")}<div class="pad"><div class="kicker">Reservation payments</div>${history || `<p class="meta">No payments yet.</p>`}${extras}<div class="kicker" style="margin-top:16px">In-app add-ons</div><p class="meta">Optional digital extras. Reservation fees stay in the payment section above.</p>${store}</div>`;
+    }
+    function viewHelp() {
+      return `${topbar("Help", "home")}<div class="pad"><div class="summary"><b>1. Choose a service</b><p class="meta">Duration and price are shown first.</p><b>2. Pick an open time</b><p class="meta">Booked and blocked times stay visible.</p><b>3. Confirm</b><p class="meta">You get a reference, and the business sees it on the schedule.</p></div><p class="meta">Changes are free until ${state.rules.cancelHours} hours before the start time.</p><p class="meta">The business would place its own contact details here.</p><p class="meta">Sample: hello@northline.example</p></div>`;
+    }
+    function viewAuth() {
+      return `<div class="pad" style="padding-top:28px"><div class="biz" style="color:#8eb0ff">Northline</div><h2 style="margin:8px 0">Sign in</h2><p class="meta">Use the sample account, or create one. This preview signs you into Alex’s reservations.</p><label class="label">Email</label><input class="field" data-field="profile.email" value="${esc(state.profile.email)}" /><label class="label">Password</label><input class="field" type="password" value="sample" readonly /><div style="height:12px"></div><button type="button" class="btn" data-act="sign-in">Sign in</button><button type="button" class="linkish" data-act="forgot">Forgot password</button><button type="button" class="linkish" data-act="sign-in">Create an account</button></div>`;
+    }
+
+    function screenBody() {
+      const views = { home: viewHome, services: viewServices, availability: viewAvailability, confirm: viewConfirm, success: viewSuccess, bookings: viewBookings, detail: viewDetail, calendar: viewCalendar, notifications: viewNotifications, profile: viewProfile, security: viewSecurity, privacy: viewPrivacy, purchases: viewPurchases, help: viewHelp, auth: viewAuth };
+      return (views[state.screen] || viewHome)();
+    }
+    function sheetHtml() {
+      if (!state.sheet) return "";
+      if (state.sheet.type === "delete") {
+        return `<div class="sheet-bg" data-act="close-sheet"><div class="sheet" data-act="stop"><h3>Delete this account?</h3><p class="meta">In the finished app this removes the profile and reservation history. This preview keeps the sample account.</p><div class="stack"><button type="button" class="btn btn-danger" data-act="do-delete">Request deletion</button><button type="button" class="btn-secondary" data-act="close-sheet">Keep account</button></div></div></div>`;
+      }
+      const b = bookingById(state.sheet.id);
+      const soon = b ? hoursUntil(b.date, b.time) < state.rules.cancelHours && hoursUntil(b.date, b.time) > 0 : false;
+      return `<div class="sheet-bg" data-act="close-sheet"><div class="sheet" data-act="stop"><h3>Cancel this reservation?</h3><p class="meta">${soon ? `This reservation starts inside ${state.rules.cancelHours} hours, so a late cancellation rule can apply.` : `Free cancellation until ${state.rules.cancelHours} hours before the start time.`}</p><div class="stack"><button type="button" class="btn btn-danger" data-act="do-cancel">Cancel reservation</button><button type="button" class="btn-secondary" data-act="close-sheet">Keep reservation</button></div></div></div>`;
+    }
+    function actionDock() {
+      if (state.screen === "services") {
+        return `<div class="dock"><button type="button" class="btn" data-act="screen" data-arg="availability" ${state.draft.serviceId ? "" : "disabled"}>Continue</button></div>`;
+      }
+      if (state.screen === "availability") {
+        const moving = !!state.draft.rescheduleId;
+        const label = !state.draft.time ? "Continue" : (!state.draft.serviceId ? "Choose a service" : (moving ? "Review new time" : "Continue"));
+        return `<div class="dock"><button type="button" class="btn" data-act="cal-continue" ${state.draft.time ? "" : "disabled"}>${label}</button></div>`;
+      }
+      if (state.screen === "confirm" && state.draft.serviceId && state.draft.time) {
+        const svc = serviceById(state.draft.serviceId);
+        const moving = !!state.draft.rescheduleId;
+        const text = moving ? "Save new time" : (state.approval[svc.id] ? "Request reservation" : "Confirm reservation");
+        return `<div class="dock"><label class="check"><input type="checkbox" data-act="consent" ${state.draft.consent ? "checked" : ""}/> <span>I agree to the cancellation policy. Free changes until ${state.rules.cancelHours} hours before.</span></label><button type="button" class="btn" id="confirm-btn" data-act="confirm-booking" ${state.draft.consent ? "" : "disabled"}>${text}</button></div>`;
+      }
+      return "";
+    }
+    function renderPhone() {
+      const tabbed = ["home", "bookings", "calendar", "profile"].includes(state.screen);
+      const light = state.screen === "home";
+      return `<div class="phone"><div class="island"></div><div class="phone-screen ${light ? "is-home" : ""}">${statusBar(light)}<div class="m-scroll">${screenBody()}</div>${actionDock()}${tabbed ? tabbar() : ""}${sheetHtml()}</div><div class="home-ind"></div></div>`;
+    }
+
+    function adminNav() {
+      const items = [["overview", "Overview", "grid"], ["calendar", "Calendar", "calendar"], ["bookings", "Bookings", "list"], ["services", "Services", "sliders"], ["payments", "Payments", "card"]];
+      return items.map(([id, label, ic]) => `<button type="button" class="navbtn ${state.screen === id ? "on" : ""}" data-act="screen" data-arg="${id}">${icon(ic)}${label}</button>`).join("");
+    }
+    function todayMix() {
+      const slots = timeSlots(TODAY);
+      const occupied = slots.filter(s => s.status === "booked" || (s.bookings.length && s.status !== "blocked")).length;
+      const open = slots.filter(s => s.status === "open").length;
+      const blocked = slots.filter(s => s.status === "blocked").length;
+      return { occupied, open, blocked, total: Math.max(slots.length, 1) };
+    }
+    function viewAdminOverview() {
+      const mix = todayMix();
+      const todayCount = state.bookings.filter(b => b.date === TODAY && b.status !== "cancelled").length;
+      const pending = state.bookings.filter(b => b.status === "pending");
+      const confirmed = state.bookings.filter(b => b.status === "confirmed").length;
+      const agenda = timeSlots(TODAY).filter(s => s.bookings.length || s.status === "blocked");
+      const agendaHtml = agenda.map(s => {
+        const who = s.bookings.map(b => `<div class="who"><b>${esc(b.customer)}</b> · ${esc(serviceById(b.serviceId).name)} ${pill(b.status)}</div>`).join("");
+        return `<div class="tl-row"><div class="tl-time">${esc(prettyTime(s.t))}</div><div class="tl-card">${who || esc(s.label)}</div></div>`;
+      }).join("");
+      const needs = pending.map(b => `<div class="tl-row"><div><b>${esc(b.customer)}</b><span class="sub">${esc(serviceById(b.serviceId).name)} · ${esc(prettyDate(b.date))} · ${esc(prettyTime(b.time))}</span><div class="mini"><button type="button" class="btn" data-act="approve" data-arg="${b.id}">Approve</button><button type="button" class="btn-secondary" data-act="decline" data-arg="${b.id}">Decline</button></div></div></div>`).join("") || `<p class="meta">Nothing is waiting.</p>`;
+      const activity = state.activity.slice(0, 4).map(a => `<div class="act-row"><div><b>${esc(a.text)}</b><span class="sub">${esc(a.time)}</span></div></div>`).join("");
+      return `<h2>Monday, October 19</h2><p class="meta">Sample morning · Central Time</p><div class="stats"><div class="stat"><b>${todayCount}</b><span>Reservations today</span></div><div class="stat"><b>${mix.open}</b><span>Open slots today</span></div><div class="stat"><b>${pending.length}</b><span>Pending requests</span></div><div class="stat"><b>${confirmed}</b><span>Confirmed overall</span></div></div><div class="bar" aria-hidden="true"><i class="occ" style="width:${(mix.occupied / mix.total) * 100}%"></i><i class="op" style="width:${(mix.open / mix.total) * 100}%"></i><i class="bl" style="width:${(mix.blocked / mix.total) * 100}%"></i></div><div class="bar-legend"><span>Occupied ${mix.occupied}</span><span>Open ${mix.open}</span><span>Blocked ${mix.blocked}</span></div><div class="split"><div class="panel"><h3>Today’s schedule</h3>${agendaHtml}<div class="mini"><button type="button" class="btn" data-act="screen" data-arg="calendar">Open calendar</button></div></div><div class="panel"><h3>Needs a decision</h3>${needs}<h3 style="margin-top:14px">Recent activity</h3>${activity}</div></div>`;
+    }
+    function viewAdminCalendar() {
+      const view = state.calView;
+      const head = `<div class="week-head"><div><h2 style="display:inline">Schedule</h2></div><div class="views"><button type="button" class="${view === "day" ? "on" : ""}" data-act="calview" data-arg="day">Day</button><button type="button" class="${view === "week" ? "on" : ""}" data-act="calview" data-arg="week">Week</button><button type="button" class="${view === "month" ? "on" : ""}" data-act="calview" data-arg="month">Month</button></div></div>`;
+      if (view === "month") {
+        const { y, m } = { y: Number(state.adminDate.slice(0, 4)), m: Number(state.adminDate.slice(5, 7)) };
+        const cells = monthCells(y, m);
+        const grid = `<div class="cal">${["M","T","W","T","F","S","S"].map(d => `<span class="dow">${d}</span>`).join("")}${cells.map(iso => iso ? `<button type="button" class="day ${iso === state.adminDate ? "sel" : ""}" data-act="admin-day" data-arg="${iso}">${Number(iso.slice(-2))}${dayTone(iso) !== "closed" ? `<i class="mark"></i>` : ""}</button>` : `<span></span>`).join("")}</div>`;
+        return `${head}<div class="panel">${grid}<p class="meta">Choose a day to open it.</p></div>`;
+      }
+      if (view === "week") {
+        const start = mondayOf(state.adminDate);
+        const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
+        const cols = days.map(iso => {
+          const dow = parseISO(iso).getDay();
+          const events = [];
+          state.bookings.filter(b => b.date === iso && b.status !== "cancelled").forEach(b => {
+            events.push(`<span class="evt ${b.status}">${esc(prettyTime(b.time))} ${esc(b.customer.split(" ")[0])}</span>`);
+          });
+          state.blocks.filter(b => b.date === iso).forEach(b => events.push(`<span class="evt block">${esc(prettyTime(b.time))} Blocked</span>`));
+          return `<button type="button" class="wday ${dow === 0 ? "off" : ""}" data-act="admin-day" data-arg="${iso}"><div class="wd">${esc(prettyDate(iso).split(",")[0])}</div><div class="n">${Number(iso.slice(-2))}</div>${dow === 0 ? `<span class="sub">Closed</span>` : events.join("")}</button>`;
+        }).join("");
+        return `${head}<div class="week-head"><button type="button" class="ghost" data-act="shift-day" data-arg="-7">Previous</button><b>${esc(prettyDate(start))} – ${esc(prettyDate(days[6]))}</b><span><button type="button" class="ghost" data-act="today">Today</button> <button type="button" class="ghost" data-act="shift-day" data-arg="7">Next</button></span></div><div class="week">${cols}</div><p class="meta">Open a day to add a reservation or block a time.</p>`;
+      }
+      const slots = timeSlots(state.adminDate);
+      const closed = parseISO(state.adminDate).getDay() === 0;
+      const rows = closed ? `<p class="meta">Sunday is closed.</p>` : slots.map(s => {
+        const people = s.bookings.map(b => `<div class="who"><b>${esc(b.customer)}</b> · ${esc(serviceById(b.serviceId).name)} ${pill(b.status)}<div class="mini">${b.status === "pending" ? `<button type="button" class="btn" data-act="approve" data-arg="${b.id}">Approve</button><button type="button" class="btn-secondary" data-act="decline" data-arg="${b.id}">Decline</button>` : `<button type="button" class="ghost" data-act="ask-cancel" data-arg="${b.id}">Cancel</button>`}</div></div>`).join("");
+        const form = state.form && state.form.date === state.adminDate && state.form.time === s.t ? `<div class="mini-form"><input data-field="form.name" placeholder="Customer name" value="${esc(state.form.name)}" aria-label="Customer name" /><select class="field" data-field="form.serviceId">${SERVICES.map(sv => `<option value="${sv.id}" ${state.form.serviceId === sv.id ? "selected" : ""}>${esc(sv.name)}</option>`).join("")}</select><div class="mini"><button type="button" class="btn" data-act="save-form">Save reservation</button><button type="button" class="ghost" data-act="cancel-form">Close</button></div></div>` : "";
+        const actions = [];
+        if (s.status === "open") {
+          actions.push(`<button type="button" class="btn" data-act="start-form" data-arg="${s.t}">Add</button>`);
+          actions.push(`<button type="button" class="ghost" data-act="block" data-arg="${s.t}">Block</button>`);
+        }
+        if (s.block) actions.push(`<button type="button" class="ghost" data-act="unblock" data-arg="${s.block.id}">Reopen</button>`);
+        return `<div class="tl-row"><div class="tl-time">${esc(prettyTime(s.t))}</div><div class="tl-card">${people || `<span class="meta">${esc(s.label)}</span>`}${form}<div class="mini">${actions.join("")}</div></div></div>`;
+      }).join("");
+      return `${head}<div class="week-head"><button type="button" class="ghost" data-act="shift-day" data-arg="-1">Previous</button><b>${esc(prettyDateLong(state.adminDate))}</b><span><button type="button" class="ghost" data-act="today">Today</button> <button type="button" class="ghost" data-act="shift-day" data-arg="1">Next</button></span></div><div class="panel">${rows}</div>`;
+    }
+    function viewAdminBookings() {
+      const q = state.adminQuery.trim().toLowerCase();
+      const filters = ["all", "pending", "confirmed", "cancelled", "completed"];
+      const rows = state.bookings.filter(b => {
+        if (state.adminFilter !== "all" && b.status !== state.adminFilter) return false;
+        const blob = `${b.customer} ${b.ref} ${serviceById(b.serviceId).name} ${b.date} ${b.note}`.toLowerCase();
+        return !q || blob.includes(q);
+      }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+      const list = rows.map(b => `<div class="tl-row"><div><b>${esc(b.customer)}</b> · ${esc(serviceById(b.serviceId).name)} ${pill(b.status)}<span class="sub">${esc(prettyDate(b.date))} · ${esc(prettyTime(b.time))} · ${esc(b.ref)} · ${esc(payLabel(b))}</span>${b.note ? `<span class="sub">${esc(b.note)}</span>` : ""}<div class="mini">${b.status === "pending" ? `<button type="button" class="btn" data-act="approve" data-arg="${b.id}">Approve</button><button type="button" class="btn-secondary" data-act="decline" data-arg="${b.id}">Decline</button>` : ""}${b.status === "confirmed" ? `<button type="button" class="ghost" data-act="ask-cancel" data-arg="${b.id}">Cancel</button>` : ""}</div></div></div>`).join("") || `<p class="meta">No reservations match.</p>`;
+      return `<h2>Reservations</h2><input class="admin-search" style="margin-top:10px" data-field="adminQuery" data-live="1" placeholder="Search name, service, or reference" value="${esc(state.adminQuery)}" aria-label="Search reservations" /><div class="filters">${filters.map(f => `<button type="button" class="${state.adminFilter === f ? "on" : ""}" data-act="filter" data-arg="${f}">${f[0].toUpperCase() + f.slice(1)}</button>`).join("")}</div><div class="panel">${list}</div>`;
+    }
+    function viewAdminServices() {
+      const services = SERVICES.map(s => `<div class="set-row"><div><b>${esc(s.name)}</b><span class="sub">${esc(s.duration)} · ${esc(s.priceLabel)}</span></div><div style="margin-left:auto;display:flex;align-items:center;gap:8px"><span class="sub">Approval</span><button type="button" class="switch ${state.approval[s.id] ? "on" : ""}" data-act="toggle-approval" data-arg="${s.id}" aria-label="Approval for ${esc(s.name)}"><i></i></button></div></div>`).join("");
+      return `<h2>Services and rules</h2><div class="split"><div class="panel"><h3>Reservation types</h3>${services}<p class="meta">2:30 PM can hold two reservations. Other times hold one. Buffer between reservations: 10 minutes.</p></div><div class="panel"><h3>Hours and booking window</h3><div class="set-row"><div>Monday–Friday<small>9:00 AM – 5:00 PM</small></div></div><div class="set-row"><div>Saturday<small>9:00 AM – 12:00 PM</small></div></div><div class="set-row"><div>Sunday<small>Closed</small></div></div><p class="meta">Customers can book up to 60 days ahead, with at least 4 hours’ notice.</p><h3>Cancellation window</h3><select class="field" data-act="cancel-hours"><option value="2" ${state.rules.cancelHours === 2 ? "selected" : ""}>2 hours</option><option value="24" ${state.rules.cancelHours === 24 ? "selected" : ""}>24 hours</option><option value="48" ${state.rules.cancelHours === 48 ? "selected" : ""}>48 hours</option></select><p class="meta">The customer sees this window on the confirmation screen.</p></div></div><div class="split"><div class="panel"><h3>Team access <span class="pill pill-completed">Later option</span></h3><div class="set-row"><div><b>Owner</b><span class="sub">Full access to schedule, services, and payments</span></div></div><div class="set-row"><div><b>Front desk</b><span class="sub">Bookings and calendar</span></div></div><div class="set-row"><div><b>Advisor</b><span class="sub">Their own schedule</span></div></div><p class="meta">Useful when more than one person manages the calendar. One location is shown in this concept.</p></div><div class="panel"><h3>Calendar connection</h3><p class="meta">Reservations can be added to the customer’s phone calendar today. A business calendar connection is ready to scope.</p><button type="button" class="btn" data-act="connect-cal">Connect a calendar</button></div></div>`;
+    }
+    function viewAdminPayments() {
+      const rows = state.bookings.filter(b => b.status !== "cancelled").map(b => `<div class="pay-row"><div><b>${esc(b.customer)}</b><span class="sub">${esc(serviceById(b.serviceId).name)} · ${esc(b.ref)}</span></div><div style="margin-left:auto;text-align:right"><b>${b.amount ? "$" + b.amount : "—"}</b><span class="sub">${esc(payLabel(b))}</span></div></div>`).join("");
+      const addons = ADDONS.map(a => `<div class="pay-row"><div><b>${esc(a.name)}</b><span class="sub">${esc(a.detail)}</span></div><div style="margin-left:auto;text-align:right"><b>${esc(a.price)}</b><span class="sub">${state.addons.includes(a.id) ? "Purchased in preview" : "Sample add-on"}</span></div></div>`).join("");
+      return `<h2>Payments</h2><div class="split"><div class="panel"><h3>Reservation payments</h3>${rows}</div><div class="panel"><h3>In-app add-ons</h3><p class="meta">Digital extras can use Apple and Google in-app purchase. Paying for the reservation itself is a normal payment.</p>${addons}</div></div>`;
+    }
+    function adminBody() {
+      const views = { overview: viewAdminOverview, calendar: viewAdminCalendar, bookings: viewAdminBookings, services: viewAdminServices, payments: viewAdminPayments };
+      return (views[state.screen] || viewAdminOverview)();
+    }
+    function renderAdmin() {
+      return `<div class="laptop"><div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span>Preview · reserveflow.app/admin</span></div><div class="admin"><aside class="aside-nav"><div class="alogo"><b>Northline</b><span>Business schedule</span></div>${adminNav()}</aside><div class="amain">${adminBody()}</div></div>${sheetHtml()}</div>`;
+    }
+    function renderPhases() {
+      return `<div class="phases"><div><h3>First version</h3><ul><li>Accounts and secure profiles</li><li>Services and open times</li><li>Book, view, and change reservations</li><li>Admin schedule with conflict checks</li><li>Confirmations and reminders</li><li>A basic payment step</li></ul></div><div><h3>Later options</h3><ul><li>Staff permissions</li><li>More than one location</li><li>Reports</li><li>More calendars</li><li>Subscriptions and premium add-ons</li></ul></div></div><p class="fine">Northline Advisory is a sample business. Services, prices, and policies are examples. This sequence is a suggestion for a later scope conversation.</p>`;
+    }
+    function renderNotes() {
+      const n = NOTES[`${state.mode}:${state.screen}`] || NOTES["customer:home"];
+      return `<p class="eyebrow">${esc(n.kicker)}</p><h2>${esc(n.title)}</h2><p class="purpose">${esc(n.text)}</p><ul>${n.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul><div class="covers">${n.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</div>${renderPhases()}`;
+    }
+    function renderClose() {
+      const questions = [
+        "What will customers reserve?",
+        "Should a time confirm immediately, or wait for approval?",
+        "Is this for your business only, or will other businesses join?",
+        "Which of these screens are essential in the first version?",
+        "Should we build for iPhone, Android, or both?",
+        "What start date and budget range should we plan around?"
+      ];
+      return `<div class="close-card"><p class="eyebrow">ReserveFlow</p><h2>Let’s shape the right solution</h2><p class="lead">This concept shows one business taking reservations: the customer on a phone, the schedule on a dashboard. Northline Advisory stands in until the real services are clear. A short conversation is enough to turn this into a first version and a realistic budget.</p>${questions.map((q, i) => `<div class="q"><span>${i + 1}</span><p>${q}</p></div>`).join("")}<div class="phase-light"><div><h3>First version</h3><ul><li>Accounts and secure profiles</li><li>Services and open times</li><li>Book, view, and change reservations</li><li>Admin schedule with conflict checks</li><li>Confirmations and reminders</li><li>A basic payment step</li></ul></div><div><h3>Later options</h3><ul><li>Staff permissions</li><li>More than one location</li><li>Reports</li><li>More calendars</li><li>Subscriptions and premium add-ons</li></ul></div></div><p class="meta">Suggested phases, ready to adjust once the reservation workflow is confirmed. Micah asked for availability controls, customer notifications, secure profiles, administrative scheduling, an integrated calendar, and in-app purchases. All six are in this preview.</p></div>`;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("on");
+      clearTimeout(showToast.t);
+      showToast.t = setTimeout(() => t.classList.remove("on"), 2600);
+    }
+    function syncTour() {
+      const i = TOUR.findIndex(t => t.mode === state.mode && t.screen === state.screen);
+      if (i >= 0) state.tour = i;
+    }
+    function paint(opts = {}) {
+      const idx = TOUR.findIndex(t => t.mode === state.mode && t.screen === state.screen);
+      document.getElementById("step").textContent = idx >= 0 ? `${idx + 1} / ${TOUR.length}` : "Preview";
+      document.getElementById("nextBtn").textContent = idx === TOUR.length - 1 ? "Start over" : "Next";
+      document.querySelector('[data-act="prev"]').disabled = state.tour <= 0 && idx <= 0;
+      document.querySelectorAll(".modes button").forEach(b => b.classList.toggle("on", b.dataset.arg === state.mode));
+      const layout = document.getElementById("layout");
+      layout.className = "layout" + (state.mode === "close" ? " single" : "");
+      layout.innerHTML = state.mode === "close"
+        ? renderClose()
+        : `<div class="device-col">${state.mode === "admin" ? renderAdmin() : renderPhone()}</div><aside class="notes">${renderNotes()}</aside>`;
+      if (opts.focus) {
+        const el = [...document.querySelectorAll("[data-field]")].find(n => n.dataset.field === opts.focus);
+        if (el) {
+          el.focus();
+          const n = el.value.length;
+          if (el.setSelectionRange) try { el.setSelectionRange(n, n); } catch (err) { /* ignore */ }
+        }
+      }
+    }
+    function setScreen(screen) {
+      state.sheet = null;
+      state.screen = screen;
+      if (state.mode === "customer") state.customerScreen = screen;
+      if (state.mode === "admin") state.adminScreen = screen;
+      syncTour();
+      paint();
+    }
+    function setMode(mode) {
+      if (state.mode === "customer") state.customerScreen = state.screen;
+      if (state.mode === "admin") state.adminScreen = state.screen;
+      state.mode = mode;
+      state.sheet = null;
+      if (mode === "customer") state.screen = state.customerScreen || "home";
+      if (mode === "admin") state.screen = state.adminScreen || "overview";
+      if (mode === "close") state.screen = "close";
+      syncTour();
+      paint();
+    }
+    function goTour(i) {
+      const step = TOUR[i];
+      state.tour = i;
+      state.sheet = null;
+      if (step.prep) step.prep();
+      state.mode = step.mode;
+      state.screen = step.screen;
+      if (step.mode === "customer") state.customerScreen = step.screen;
+      if (step.mode === "admin") state.adminScreen = step.screen;
+      paint();
+    }
+    function nextStep() {
+      if (TOUR.findIndex(t => t.mode === state.mode && t.screen === state.screen) === TOUR.length - 1) { goTour(0); return; }
+      goTour(Math.min(TOUR.length - 1, state.tour + 1));
+    }
+    function prevStep() { if (state.tour > 0) goTour(state.tour - 1); }
+    function selectDate(iso) {
+      if (state.screen === "calendar") {
+        state.myDate = iso;
+        const [y, m] = iso.split("-").map(Number);
+        if (m !== state.monthC.m) state.monthC = { y, m };
+        paint();
+        return;
+      }
+      if (iso < TODAY) return;
+      state.draft.date = iso;
+      if (!timeSlots(iso).some(s => s.t === state.draft.time && customerCanTake(s))) state.draft.time = null;
+      paint();
+    }
+    function shiftMonth(dir) {
+      const key = state.screen === "calendar" ? "monthC" : "monthA";
+      let { y, m } = state[key];
+      m += Number(dir);
+      if (m < 1) { m = 12; y--; }
+      if (m > 12) { m = 1; y++; }
+      const min = key === "monthC" ? 9 : 10;
+      if (y !== 2026 || m < min || m > 12) return;
+      state[key] = { y, m };
+      paint();
+    }
+    function confirmBooking() {
+      if (!state.draft.consent || !state.draft.serviceId || !state.draft.time) return;
+      const slot = timeSlots(state.draft.date).find(s => s.t === state.draft.time);
+      if (!slot || !customerCanTake(slot)) { showToast("That time was just taken. Choose another."); return; }
+      const svc = serviceById(state.draft.serviceId);
+      if (state.draft.rescheduleId) {
+        const b = bookingById(state.draft.rescheduleId);
+        b.date = state.draft.date;
+        b.time = state.draft.time;
+        b.note = state.draft.note;
+        b.meet = state.draft.meet;
+        b.advisor = state.draft.advisor;
+        state.draft.rescheduleId = null;
+        state.draft.consent = false;
+        state.successId = b.id;
+        addNotif({ kind: "change", title: "Reservation updated", body: `${svc.name} is now ${prettyDate(b.date)} at ${prettyTime(b.time)}.`, bookingId: b.id });
+        state.activity.unshift({ text: `${b.customer} moved ${svc.name} to ${prettyDate(b.date)}.`, time: "Just now" });
+        state.screen = "success";
+        paint();
+        showToast("Time updated");
+        return;
+      }
+      const status = state.approval[svc.id] ? "pending" : "confirmed";
+      const b = {
+        id: "b" + Date.now(),
+        ref: "RF-" + (23000 + state.bookings.length),
+        customer: state.profile.name,
+        owner: "alex",
+        serviceId: svc.id,
+        date: state.draft.date,
+        time: state.draft.time,
+        status,
+        pay: svc.price === 0 ? "none" : (state.draft.payNow ? "paid" : "due"),
+        amount: svc.price,
+        note: state.draft.note,
+        meet: state.draft.meet,
+        advisor: state.draft.advisor
+      };
+      state.bookings.unshift(b);
+      state.successId = b.id;
+      state.draft.consent = false;
+      state.draft.time = null;
+      addNotif({ kind: "confirmation", title: status === "pending" ? "Request received" : "Reservation confirmed", body: `${svc.name} on ${prettyDate(b.date)} at ${prettyTime(b.time)}. Reference ${b.ref}.`, bookingId: b.id });
+      if (b.pay === "paid") addNotif({ kind: "payment", title: "Receipt", body: `$${b.amount}.00 paid. Reference ${b.ref}.`, bookingId: b.id });
+      state.activity.unshift({ text: `${b.customer} ${status === "pending" ? "requested" : "booked"} ${svc.name} for ${prettyDate(b.date)}.`, time: "Just now" });
+      state.screen = "success";
+      state.customerScreen = "success";
+      paint();
+      showToast(status === "pending" ? "Request sent to the business" : "Reservation confirmed");
+    }
+    function startReschedule(id) {
+      const b = bookingById(id);
+      state.detailId = id;
+      state.draft.rescheduleId = id;
+      state.draft.serviceId = b.serviceId;
+      state.draft.date = b.date;
+      state.draft.time = null;
+      state.draft.consent = false;
+      state.draft.note = b.note || "";
+      state.draft.meet = b.meet;
+      state.draft.advisor = b.advisor;
+      state.monthA = { y: Number(b.date.slice(0, 4)), m: Number(b.date.slice(5, 7)) };
+      setScreen("availability");
+    }
+    function doCancel(id) {
+      const b = bookingById(id);
+      if (!b) return;
+      b.status = "cancelled";
+      if (b.owner === "alex") addNotif({ kind: "change", title: "Reservation cancelled", body: `${serviceById(b.serviceId).name} on ${prettyDate(b.date)} was cancelled.`, bookingId: b.id });
+      state.activity.unshift({ text: `${b.customer} cancelled ${serviceById(b.serviceId).name}.`, time: "Just now" });
+      state.sheet = null;
+      paint();
+      showToast("Reservation cancelled");
+    }
+    function setStatus(id, status) {
+      const b = bookingById(id);
+      if (!b) return;
+      b.status = status;
+      const svc = serviceById(b.serviceId);
+      if (b.owner === "alex") {
+        addNotif({
+          kind: "change",
+          title: status === "confirmed" ? "Reservation confirmed" : "Reservation declined",
+          body: `${svc.name} on ${prettyDate(b.date)} at ${prettyTime(b.time)} is ${status === "confirmed" ? "confirmed" : "declined"}.`,
+          bookingId: b.id
+        });
+      }
+      state.activity.unshift({ text: `${b.customer} · ${svc.name} ${status}.`, time: "Just now" });
+      state.sheet = null;
+      paint();
+      showToast(status === "confirmed" ? "Reservation confirmed" : "Reservation declined");
+    }
+    function saveAdminBooking() {
+      if (!state.form) return;
+      const name = state.form.name.trim();
+      if (!name) { showToast("Add a customer name"); return; }
+      const slot = timeSlots(state.form.date).find(s => s.t === state.form.time);
+      if (!slot || slot.status !== "open") { showToast("That opening is gone"); return; }
+      const svc = serviceById(state.form.serviceId);
+      const isAlex = name.toLowerCase() === state.profile.name.toLowerCase();
+      const b = {
+        id: "b" + Date.now(),
+        ref: "RF-" + (24000 + state.bookings.length),
+        customer: name,
+        owner: isAlex ? "alex" : "guest",
+        serviceId: svc.id,
+        date: state.form.date,
+        time: state.form.time,
+        status: state.approval[svc.id] ? "pending" : "confirmed",
+        pay: svc.price ? "due" : "none",
+        amount: svc.price,
+        note: "",
+        meet: "video",
+        advisor: "first"
+      };
+      state.bookings.push(b);
+      if (isAlex) addNotif({ kind: "confirmation", title: "Reservation added", body: `${svc.name} on ${prettyDate(b.date)} at ${prettyTime(b.time)}.`, bookingId: b.id });
+      state.activity.unshift({ text: `${name} booked ${svc.name} for ${prettyDate(b.date)}.`, time: "Just now" });
+      state.form = null;
+      paint();
+      showToast("Reservation added");
+    }
+    function blockSlot(date, time) {
+      state.blocks.push({ id: "k" + Date.now(), date, time, reason: "Blocked" });
+      state.activity.unshift({ text: `Blocked ${prettyDate(date)} at ${prettyTime(time)}.`, time: "Just now" });
+      paint();
+      showToast("That time is now unavailable to customers");
+    }
+    function buyAddon(id) {
+      if (!state.addons.includes(id)) state.addons.push(id);
+      paint();
+      showToast("Preview only. No charge is placed.");
+    }
+
+    const initialState = structuredClone(state);
+
+    function resetAll() {
+      const fresh = structuredClone(initialState);
+      Object.keys(state).forEach(k => delete state[k]);
+      Object.assign(state, fresh);
+      paint();
+      showToast("Preview reset");
+    }
+    function onClick(e) {
+      if (e.target.closest("[data-act='stop']") && !e.target.closest("[data-act='stop'] [data-act]")) return;
+      const el = e.target.closest("[data-act]");
+      if (!el || el.disabled) return;
+      const act = el.dataset.act;
+      const arg = el.dataset.arg || "";
+      if (act === "stop") return;
+      switch (act) {
+        case "mode": setMode(arg); break;
+        case "screen": setScreen(arg); break;
+        case "next": nextStep(); break;
+        case "prev": prevStep(); break;
+        case "reset": resetAll(); break;
+        case "service": state.draft.serviceId = arg; paint(); break;
+        case "meet": state.draft.meet = arg; paint(); break;
+        case "advisor": state.draft.advisor = arg; paint(); break;
+        case "date": selectDate(arg); break;
+        case "time": state.draft.time = arg; paint(); break;
+        case "month": shiftMonth(arg); break;
+        case "cal-continue":
+          if (!state.draft.time) return;
+          setScreen(state.draft.serviceId ? "confirm" : "services");
+          break;
+        case "confirm-booking": confirmBooking(); break;
+        case "pay": state.draft.payNow = arg === "now"; paint(); break;
+        case "tab": state.bookingTab = arg; paint(); break;
+        case "detail": state.detailId = arg; setScreen("detail"); break;
+        case "reschedule": startReschedule(arg); break;
+        case "ask-cancel": state.sheet = { type: "cancel", id: arg || state.detailId }; paint(); break;
+        case "close-sheet": state.sheet = null; paint(); break;
+        case "do-cancel": doCancel(state.sheet && state.sheet.id); break;
+        case "add-cal": showToast("This would add the reservation to the phone calendar."); break;
+        case "mark-all": state.notifications.forEach(n => { n.unread = false; }); paint(); break;
+        case "open-note": {
+          const n = state.notifications.find(x => x.id === arg);
+          if (!n) return;
+          n.unread = false;
+          if (n.bookingId) { state.detailId = n.bookingId; setScreen("detail"); }
+          else paint();
+          break;
+        }
+        case "pref": state.prefs[arg] = !state.prefs[arg]; paint(); break;
+        case "save-profile": paint(); showToast("Profile saved in this preview."); break;
+        case "reset-pass": showToast("A reset link would be sent to " + state.profile.email); break;
+        case "sign-out": setScreen("auth"); break;
+        case "sign-in": setScreen("home"); showToast("Signed in as " + state.profile.name); break;
+        case "forgot": showToast("A reset link would be sent to " + state.profile.email); break;
+        case "download": showToast("A copy of the account data would download here."); break;
+        case "ask-delete": state.sheet = { type: "delete" }; paint(); break;
+        case "do-delete": state.sheet = null; paint(); showToast("Deletion request noted in this preview."); break;
+        case "buy": buyAddon(arg); break;
+        case "filter": state.adminFilter = arg; paint(); break;
+        case "calview": state.calView = arg; paint(); break;
+        case "admin-day": state.adminDate = arg; state.calView = "day"; paint(); break;
+        case "shift-day": {
+          const n = addDays(state.adminDate, Number(arg));
+          if (n >= "2026-09-01" && n <= "2026-12-31") state.adminDate = n;
+          paint();
+          break;
+        }
+        case "today": state.adminDate = TODAY; paint(); break;
+        case "approve": setStatus(arg, "confirmed"); break;
+        case "decline": setStatus(arg, "cancelled"); break;
+        case "toggle-approval": state.approval[arg] = !state.approval[arg]; paint(); break;
+        case "start-form":
+          state.form = { date: state.adminDate, time: arg, name: "", serviceId: "strategy" };
+          paint({ focus: "form.name" });
+          break;
+        case "cancel-form": state.form = null; paint(); break;
+        case "save-form": saveAdminBooking(); break;
+        case "block": blockSlot(state.adminDate, arg); break;
+        case "unblock":
+          state.blocks = state.blocks.filter(b => b.id !== arg);
+          paint();
+          showToast("Opening restored");
+          break;
+        case "connect-cal":
+          showToast("Apple, Google, and Outlook can be connected once the calendar choice is confirmed.");
+          break;
+        default: break;
+      }
+    }
+    function onInput(e) {
+      const el = e.target;
+      if (!el.dataset || !el.dataset.field) return;
+      setField(el.dataset.field, el.value);
+      if (el.dataset.live) paint({ focus: el.dataset.field });
+    }
+    function onChange(e) {
+      const el = e.target;
+      if (el.dataset.act === "consent") {
+        state.draft.consent = el.checked;
+        const btn = document.getElementById("confirm-btn");
+        if (btn) btn.disabled = !el.checked;
+        return;
+      }
+      if (el.dataset.act === "cancel-hours") {
+        state.rules.cancelHours = Number(el.value);
+        paint();
+        return;
+      }
+      if (el.dataset.field) setField(el.dataset.field, el.type === "checkbox" ? el.checked : el.value);
+    }
+    function onKey(e) {
+      if (e.target.matches("input, textarea, select")) return;
+      if (e.key === "ArrowRight") nextStep();
+      if (e.key === "ArrowLeft") prevStep();
+    }
+
+    paint();
+    document.body.addEventListener("click", onClick);
+    document.body.addEventListener("input", onInput);
+    document.body.addEventListener("change", onChange);
+    document.addEventListener("keydown", onKey);
+  </script>
+</body>
+</html>
